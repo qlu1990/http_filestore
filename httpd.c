@@ -416,17 +416,27 @@ void serve_file(int client, const char *filename)
  int data_len = 0;
  char buf[1024];
  char databuf[4096];
+ char * delim="/";
+ char * p = NULL;
+ char * name="";
+
  buf[0] = 'A'; buf[1] = '\0';
  while ((numchars > 0) && strcmp("\n", buf))  /* read & discard headers */
   numchars = get_line(client, buf, sizeof(buf));
 
  //printf("%s\n", buf);
  resource = fopen(filename, "r");
+ p = strtok(filename,delim);
+ while (p!=NULL) {
+   name = p;
+   p=strtok(NULL,delim);
+   /* code */
+ }
  if (resource == NULL)
   not_found(client);
  else
  {
-  headers_file(client, filename);
+  headers_file(client, name);
   //cat(client, resource);
 
 

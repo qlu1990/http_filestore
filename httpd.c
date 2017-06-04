@@ -40,9 +40,10 @@ int get_line(int, char *, int);
 void headers(int, const char *);
 void not_found(int);
 void serve_file(int, const char *);
+void down_file(int, const char *);
 int startup(u_short *);
 void unimplemented(int);
-
+int endswith(char * str,char * endstr);
 /**********************************************************************/
 /* A request has caused a call to accept() on the server port to
  * return.  Process the request appropriately.
@@ -120,7 +121,12 @@ void accept_request(int client)
       (st.st_mode & S_IXOTH)    )
    cgi = 1;
   if (!cgi)
-   serve_file(client, path);
+  {
+	  if(endswith(path,".html")==0)
+	   serve_file(client, path);
+	   else
+	   down_file(client,path);
+  }
   else
    execute_cgi(client, path, method, query_string);
  }
@@ -401,15 +407,63 @@ void not_found(int client)
  sprintf(buf, "</BODY></HTML>\r\n");
  send(client, buf, strlen(buf), 0);
 }
-
 /**********************************************************************/
 /* Send a regular file to the client.  Use headers, and report
- * errors to client if they occur.
+ *  * errors to client if they occur.
+ *   * Parameters: a pointer to a file structure produced from the socket
+ *    *              file descriptor
+ *     *             the name of the file to serve */
+/**********************************************************************/
+void serve_file(int client, const char *filename)
+{
+	    FILE *resource = NULL;
+		int numchars = 1;
+		char buf[1024];
+
+		buf[0] = 'A'; buf[1] = '\0';
+		while ((numchars > 0) && strcmp("\n", buf))  /* read & discard headers */
+			numchars = get_line(client, buf, sizeof(buf));
+
+		resource = fopen(filename, "r");
+		if (resource == NULL)
+			not_found(client);
+		else
+			{
+			 headers(client, filename);
+			 cat(client, resource);	
+			}
+	   fclose(resource);
+}
+/**************************************************************************/
+/* match the endstring in one string  if success return 0 else return -1
+ *
+ *
+ *
+ * ************************************************************************/
+int endswith(char * str,char * endstr)
+{
+	int endlen=strlen(endstr);
+	int matchlen=strlen(str);
+	if(matchlen>matchlen)
+		return -1;
+	else
+	{
+		for(int i=endlen-1;i>=0;i--)
+		{
+			if(str[i+matchlen-endlen]!=endstr[i])
+				return -1;
+		}
+		return 0;
+	}
+}
+/**********************************************************************/
+/* Send a regular file(not end with html htm ) to the client.  Use headers, and report
+ * errors to client if they occur. 
  * Parameters: a pointer to a file structure produced from the socket
  *              file descriptor
  *             the name of the file to serve */
 /**********************************************************************/
-void serve_file(int client, const char *filename)
+void down_file(int client, const char *filename)
 {
  FILE *resource = NULL;
  int numchars = 1;

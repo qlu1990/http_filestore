@@ -430,7 +430,7 @@ void serve_file(int client, const char *filename)
 		else
 			{
 			 headers(client, filename);
-			 cat(client, resource);	
+			 cat(client, resource);
 			}
 	   fclose(resource);
 }
@@ -448,7 +448,8 @@ int endswith(char * str,char * endstr)
 		return -1;
 	else
 	{
-		for(int i=endlen-1;i>=0;i--)
+    int i ;
+		for(i=endlen-1;i>=0;i--)
 		{
 			if(str[i+matchlen-endlen]!=endstr[i])
 				return -1;
@@ -458,7 +459,7 @@ int endswith(char * str,char * endstr)
 }
 /**********************************************************************/
 /* Send a regular file(not end with html htm ) to the client.  Use headers, and report
- * errors to client if they occur. 
+ * errors to client if they occur.
  * Parameters: a pointer to a file structure produced from the socket
  *              file descriptor
  *             the name of the file to serve */
